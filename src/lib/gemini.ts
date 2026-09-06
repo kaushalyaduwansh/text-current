@@ -17,7 +17,7 @@ const EXAM_DESCRIPTIONS: Record<string, string> = {
 };
 
 export async function generateQuestions(
-  images: { base64: string; mimeType: string }[],
+  images: { url: string; mimeType: string }[],
   examType: string,
   questionCount: number,
   additionalPrompt?: string
@@ -65,12 +65,19 @@ OUTPUT FORMAT (strict JSON array, no markdown, no code blocks):
 
 Generate EXACTLY ${questionCount} questions. Return ONLY the JSON array, nothing else.`;
 
-  const imageParts = images.map((img) => ({
-    inlineData: {
-      data: img.base64,
-      mimeType: img.mimeType,
-    },
-  }));
+  const imageParts = await Promise.all(
+    images.map(async (img) => {
+      const response = await fetch(img.url);
+      const arrayBuffer = await response.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      return {
+        inlineData: {
+          data: base64,
+          mimeType: img.mimeType,
+        },
+      };
+    })
+  );
 
   const result = await model.generateContent([prompt, ...imageParts]);
   const responseText = result.response.text();

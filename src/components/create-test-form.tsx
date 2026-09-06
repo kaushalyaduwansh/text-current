@@ -172,7 +172,6 @@ export function CreateTestForm() {
         const url = await uploadToImageKit(img.base64, img.mimeType, i + 1, images.length);
         uploadedImages.push({
           url,
-          base64: img.base64,
           mimeType: img.mimeType
         });
         setUploadProgress(10 + ((i + 1) / images.length) * 30); // Up to 40%
